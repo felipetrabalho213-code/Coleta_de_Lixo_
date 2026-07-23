@@ -41,37 +41,10 @@ class _TruckPageState extends State<TruckPage> {
           ),
 
           // 🛤️ Linha da rota do caminhão
-          PolylineLayer(
-            polylines: [
-              Polyline(
-                points: [
-                  _posicaoInicial,
-                  const LatLng(-8.1145, -35.0085),
-                  _posicaoCaminhao,
-                  const LatLng(-8.1170, -35.0110),
-                  const LatLng(-8.1200, -35.0140),
-                ],
-                color: const Color(0xFF006B4F),
-                strokeWidth: 5,
-              ),
-            ],
-          ),
+        
 
           // 🚛 Marcador do caminhão
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: _posicaoCaminhao,
-                width: 50,
-                height: 50,
-                child: const Icon(
-                  Icons.local_shipping,
-                  color: Color(0xFF004B36),
-                  size: 50,
-                ),
-              ),
-            ],
-          ),
+        
         ],
       ),
     );
