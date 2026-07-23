@@ -25,6 +25,7 @@ class HomePage extends StatelessWidget {
                 child: Image.asset(
                   'assets/images/logo.png',
                   height: 90,
+                  fit: BoxFit.contain,
                 ),
               ),
 
@@ -40,7 +41,8 @@ class HomePage extends StatelessWidget {
                           icon: Icons.arrow_downward,
                           title: 'Ver\nCaminhão',
                           color: const Color(0xFF006B4F),
-                          page: const MapPage(),
+                          // ✅ Correto: abre a página com o mapa real
+                          page: const TruckPage(),
                         ),
                         buildCard(
                           context: context,
@@ -52,18 +54,20 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
 
+                    const SizedBox(height: 16),
+
                     Row(
                       children: [
                         buildCard(
                           context: context,
-                          icon: Icons.add,
+                          icon: Icons.calendar_today,
                           title: 'Calendário',
                           color: const Color(0xFF006B4F),
                           page: const CalendarPage(),
                         ),
                         buildCard(
                           context: context,
-                          icon: Icons.receipt_long,
+                          icon: Icons.menu_book,
                           title: 'Coleta\nEspecial',
                           color: const Color(0xFF006B4F),
                           page: const SpecialCollectionPage(),
@@ -95,9 +99,7 @@ class HomePage extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (_) => page,
-              ),
+              MaterialPageRoute(builder: (_) => page),
             );
           },
           child: Container(
@@ -106,26 +108,29 @@ class HomePage extends StatelessWidget {
             decoration: BoxDecoration(
               color: color,
               borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 CircleAvatar(
                   backgroundColor: Colors.white,
-                  child: Icon(
-                    icon,
-                    color: color,
-                  ),
+                  child: Icon(icon, color: color, size: 26),
                 ),
-
                 const Spacer(),
-
                 Text(
                   title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    height: 1.2,
                   ),
                 ),
               ],
