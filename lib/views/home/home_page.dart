@@ -23,7 +23,7 @@ class HomePage extends StatelessWidget {
               // Logo
               Center(
                 child: Image.asset(
-                  'assets/images/logo.png',
+                  'assets/images/teste.png',
                   height: 90,
                   fit: BoxFit.contain,
                 ),

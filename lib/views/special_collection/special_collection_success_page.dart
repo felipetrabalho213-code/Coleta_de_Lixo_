@@ -18,26 +18,9 @@ class SpecialCollectionSuccessPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 14,
-              backgroundColor: const Color(0xFF1E9C4B),
-              child: const Text(
-                'S',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Text(
-              'Segue Coleta',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+          Image.asset(
+              'assets/images/teste.png',
+              height: 80,
             ),
           ],
         ),

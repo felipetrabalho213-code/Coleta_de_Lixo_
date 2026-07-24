@@ -13,7 +13,7 @@ class _TruckPageState extends State<TruckPage> {
   final MapController _controladorMapa = MapController();
 
   // 📍 Posição inicial: Jaboatão dos Guararapes - PE
-  final LatLng _posicaoInicial = const LatLng(-8.1138, -35.0072);
+  final LatLng _posicaoInicial = const LatLng(-8.890727456058368, -36.49433579689482);
   final LatLng _posicaoCaminhao = const LatLng(-8.1150, -35.0090);
 
   @override

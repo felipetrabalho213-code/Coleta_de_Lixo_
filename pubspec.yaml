@@ -9,10 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  shared_preferences: ^2.2.2
   flutter_map: ^6.1.0
   latlong2: ^0.9.0
   table_calendar: ^3.1.2
-  flutter_localizations: # ✅ Adicione essa linha
+  flutter_localizations:
     sdk: flutter
 
 dev_dependencies:
