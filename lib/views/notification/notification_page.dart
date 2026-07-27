@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../controllers/notification_controller.dart';
 import 'notification_success_page.dart';
 
 class NotificationPage extends StatelessWidget {
@@ -6,8 +7,11 @@ class NotificationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Instância do Controller
+    final NotificationController controller = NotificationController();
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 250, 250, 250), // Fundo verde do design
+      backgroundColor: const Color.fromARGB(255, 250, 250, 250), // Fundo do design
       body: SafeArea(
         child: Stack(
           children: [
@@ -16,7 +20,7 @@ class NotificationPage extends StatelessWidget {
               top: 10,
               left: 10,
               child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
+                icon: const Icon(Icons.arrow_back_ios, color: Colors.grey),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
@@ -81,14 +85,17 @@ class NotificationPage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(24),
                               ),
                             ),
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const NotificationSuccessPage(),
-                                ),
-                              );
+                            onPressed: () async {
+                              await controller.ativarNotificacoes();
+                              if (context.mounted) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const NotificationSuccessPage(),
+                                  ),
+                                );
+                              }
                             },
                             child: const Text(
                               'Sim',

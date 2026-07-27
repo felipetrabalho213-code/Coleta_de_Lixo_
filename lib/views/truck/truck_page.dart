@@ -34,7 +34,7 @@ class _TruckPageState extends State<TruckPage> {
           ),
         ),
         children: [
-          // 🗺️ Mapa gratuito do OpenStreetMap
+              // 🗺️ Mapa gratuito do OpenStreetMap
           TileLayer(
             urlTemplate: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
             userAgentPackageName: "segue_coleta",

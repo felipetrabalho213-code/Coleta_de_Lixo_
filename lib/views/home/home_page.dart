@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../controllers/home_controller.dart';
 import '../calendar/calendar_page.dart';
 import '../map/map_page.dart';
 import '../notification/notification_page.dart';
@@ -11,6 +12,9 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Instância do controller mantendo o layout intacto
+    final HomeController controller = HomeController();
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -41,7 +45,6 @@ class HomePage extends StatelessWidget {
                           icon: Icons.arrow_downward,
                           title: 'Ver\nCaminhão',
                           color: const Color(0xFF006B4F),
-                          // ✅ Correto: abre a página com o mapa real
                           page: const TruckPage(),
                         ),
                         buildCard(
