@@ -1,148 +1,158 @@
 import 'package:flutter/material.dart';
 import '../../controllers/notification_controller.dart';
-import 'notification_success_page.dart';
+import '../../utils/app_colors.dart';
 
 class NotificationPage extends StatelessWidget {
   const NotificationPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Instância do Controller
-    final NotificationController controller = NotificationController();
-
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 250, 250, 250), // Fundo do design
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // Botão de Voltar no topo
-            Positioned(
-              top: 10,
-              left: 10,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.grey),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Logo do projeto em Imagem
-                  Image.asset(
-                    'assets/images/teste.png',
-                    height: 80,
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // Card de Pergunta
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(28),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Deseja receber notificações\nquando o caminhão\nestiver próximo?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                            height: 1.3,
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Traço Verde
-                        Container(
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E9C4B),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-
-                        const SizedBox(height: 28),
-
-                        // Botão SIM (Branco com texto preto)
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              side: BorderSide(color: Colors.grey.shade300),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-                            onPressed: () async {
-                              await controller.ativarNotificacoes();
-                              if (context.mounted) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const NotificationSuccessPage(),
-                                  ),
-                                );
-                              }
-                            },
-                            child: const Text(
-                              'Sim',
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // Botão NÃO (Branco com texto preto)
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              side: BorderSide(color: Colors.grey.shade300),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              'Não',
-                              style: TextStyle(
-                                color: Colors.black87,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+      appBar: AppBar(
+        title: const Text(
+          'Histórico de Avisos',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
+        backgroundColor: Colors.green,
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          AnimatedBuilder(
+            animation: NotificationController.instance,
+            builder: (context, _) {
+              if (NotificationController.instance.notificacoes.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              return IconButton(
+                icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                tooltip: 'Limpar tudo',
+                onPressed: () {
+                  _confirmarLimpezaGeral(context);
+                },
+              );
+            },
+          ),
+        ],
+      ),
+      body: AnimatedBuilder(
+        animation: NotificationController.instance,
+        builder: (context, child) {
+          final notificacoes = NotificationController.instance.notificacoes;
+
+          if (notificacoes.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.notifications_none,
+                        size: 64,
+                        color: Colors.green.withOpacity(0.1),                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Nenhum aviso no momento',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Quando houver comunicados sobre a coleta ou o caminhão estiver se aproximando, os avisos enviados pelo sistema aparecerão aqui.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(16),
+            itemCount: notificacoes.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final aviso = notificacoes[index];
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.green,
+                    child: Icon(
+                      Icons.notifications_active,
+                      color: Colors.green.withOpacity(0.1),
+                    ),
+                  ),
+                  title: Text(
+                    aviso['title'] ?? '',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  subtitle: Padding(
+                    padding: const EdgeInsets.only(top: 4.0),
+                    child: Text(
+                      aviso['body'] ?? '',
+                      style: const TextStyle(color: Colors.black87),
+                    ),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    onPressed: () {
+                      if (aviso['id'] != null) {
+                        NotificationController.instance.removerNotificacao(aviso['id']!);
+                      }
+                    },
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  void _confirmarLimpezaGeral(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Limpar Histórico'),
+        content: const Text('Deseja apagar todos os avisos do histórico?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              NotificationController.instance.limparTodas();
+              Navigator.of(ctx).pop();
+            },
+            child: const Text('Excluir', style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "554380075684",
+    "project_id": "segue-coleta",
+    "storage_bucket": "segue-coleta.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:554380075684:android:b049041a6da8208b1d7c31",
+        "android_client_info": {
+          "package_name": "com.example.segue_coleta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfY0sCoZkKbkLyIBURPF2Cg_6cP09bOWY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
