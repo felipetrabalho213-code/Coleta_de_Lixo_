@@ -1,31 +1,49 @@
-class CalendarController {
-  // 📜 Ruas e horários de Garanhuns - PE
-  final List<Map<String, String>> rotasGaranhuns = const [
-    {"rua": "Rua Marechal Deodoro", "horario": "07h30"},
-    {"rua": "Rua Barão de Lucena", "horario": "08h00"},
-    {"rua": "Rua da Conceição", "horario": "08h30"},
-    {"rua": "Rua Siqueira Campos", "horario": "09h00"},
-    {"rua": "Rua Duque de Caxias", "horario": "09h30"},
-    {"rua": "Rua Floriano Peixoto", "horario": "10h00"},
-    {"rua": "Rua Gonçalves Dias", "horario": "10h30"},
-    {"rua": "Rua Primeiro de Março", "horario": "11h00"},
-    {"rua": "Rua Quinze de Novembro", "horario": "11h30"},
-    {"rua": "Rua São José", "horario": "13h00"},
-    {"rua": "Rua Santo Antônio", "horario": "13h30"},
-    {"rua": "Rua Tiradentes", "horario": "14h00"},
-    {"rua": "Rua Visconde de Rio Branco", "horario": "14h30"},
-    {"rua": "Rua Prudente de Morais", "horario": "15h00"},
-    {"rua": "Rua Deodoro da Fonseca", "horario": "15h30"},
-    {"rua": "Rua Getúlio Vargas", "horario": "16h00"},
-    {"rua": "Avenida Rui Barbosa", "horario": "16h30"},
-    {"rua": "Avenida Agamenon Magalhães", "horario": "17h00"},
-    {"rua": "Avenida Frei Damião", "horario": "17h30"},
-    {"rua": "Avenida Souza Filho", "horario": "18h00"},
-  ];
+import 'package:flutter/foundation.dart';
 
-  // Lógica para obter a rota do dia selecionado
-  Map<String, String> obterRotaPorData(DateTime data) {
-    int indice = data.day % rotasGaranhuns.length;
-    return rotasGaranhuns[indice];
+// Modelo simples para representar cada ponto da rota no dia
+class RotaItem {
+  final String rua;
+  final String bairro;
+  final String horario;
+
+  RotaItem({
+    required this.rua,
+    required this.bairro,
+    required this.horario,
+  });
+}
+
+class CalendarController extends ChangeNotifier {
+  static final CalendarController instance = CalendarController._internal();
+  CalendarController._internal();
+
+  DateTime _diaSelecionado = DateTime.now();
+  DateTime get diaSelecionado => _diaSelecionado;
+
+  void selecionarDia(DateTime dia) {
+    _diaSelecionado = dia;
+    notifyListeners();
+  }
+
+  // Retorna a lista de 4 ruas/horários baseada no dia selecionado
+  List<RotaItem> obterRotasDoDia(DateTime dia) {
+    // Exemplo dinâmico: podemos alternar os horários e ruas dependendo do dia
+    final int diaDaSemana = dia.weekday;
+
+    if (diaDaSemana % 2 == 0) {
+      return [
+        RotaItem(rua: 'Rua Siqueira Campos', bairro: 'Santo Antônio', horario: '08:00'),
+        RotaItem(rua: 'Rua Dantas Barreto', bairro: 'Santo Antônio', horario: '09:30'),
+        RotaItem(rua: 'Av. Rui Barbosa', bairro: 'Heliópolis', horario: '11:00'),
+        RotaItem(rua: 'Rua Santos Dumont', bairro: 'Heliópolis', horario: '14:00'),
+      ];
+    } else {
+      return [
+        RotaItem(rua: 'Rua Rosa Branca', bairro: 'Boa Vista', horario: '07:30'),
+        RotaItem(rua: 'Rua Nilo Peçanha', bairro: 'Boa Vista', horario: '09:00'),
+        RotaItem(rua: 'Rua Dr. José Mariano', bairro: 'Centro', horario: '10:30'),
+        RotaItem(rua: 'Rua Treze de Maio', bairro: 'Centro', horario: '13:30'),
+      ];
+    }
   }
 }

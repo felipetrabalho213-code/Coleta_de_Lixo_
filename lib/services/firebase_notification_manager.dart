@@ -1,49 +1,60 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import '../controllers/notification_controller.dart';
-
-// Função de nível superior para tratar mensagens em segundo plano
-@pragma('vm:entry-point')
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  NotificationController.instance.adicionarNotificacaoFirebase(message);
-}
+import '../views/notification/notification_page.dart';
 
 class FirebaseNotificationManager {
-  final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+  static final FirebaseNotificationManager instance = FirebaseNotificationManager._internal();
+  FirebaseNotificationManager._internal();
+
+  // Chave de navegação global
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
 
   Future<void> inicializar() async {
-    // 1. Solicita permissão para exibir notificações no dispositivo
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
+    // 1. Permissão para receber notificações
+    await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      // 2. Imprime o Token FCM no terminal para você usar no "Enviar mensagem de teste"
-      try {
-        String? token = await _firebaseMessaging.getToken();
-        print("==================================================");
-        print("MEU TOKEN FCM: $token");
-        print("==================================================");
-      } catch (e) {
-        print("Erro ao obter o token FCM: $e");
+    // 2. Inscrição no tópico
+    await _messaging.subscribeToTopic('garanhuns_coleta');
+
+    // 3. Recebe notificação com o APP ABERTO na tela (Primeiro plano)
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      NotificationController.instance.adicionarNotificacaoFirebase(message);
+    });
+
+    // 4. Clique na notificação com o APP EM SEGUNDO PLANO
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      NotificationController.instance.adicionarNotificacaoFirebase(message);
+      _abrirTelaHistorico();
+    });
+
+    // 5. Clique na notificação com o APP TOTALMENTE FECHADO
+    _messaging.getInitialMessage().then((RemoteMessage? message) {
+      if (message != null) {
+        NotificationController.instance.adicionarNotificacaoFirebase(message);
+        // Aguarda um pequeno delay para a interface carregar antes de navegar
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _abrirTelaHistorico();
+        });
       }
+    });
+  }
 
-      // 3. Inscreve o dispositivo no tópico padrão da cidade
-      await _firebaseMessaging.subscribeToTopic('garanhuns_coleta');
-
-      // 4. Configura o manipulador de segundo plano
-      FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-      // 5. App ABERTO (Foreground)
-      FirebaseMessaging.onMessage.listen((message) {
-        NotificationController.instance.adicionarNotificacaoFirebase(message);
-      });
-
-      // 6. App em SEGUNDO PLANO (Ao clicar na notificação)
-      FirebaseMessaging.onMessageOpenedApp.listen((message) {
-        NotificationController.instance.adicionarNotificacaoFirebase(message);
-      });
+  // Função responsável por fazer a transição de tela
+  void _abrirTelaHistorico() {
+    final state = navigatorKey.currentState;
+    if (state != null) {
+      state.push(
+        MaterialPageRoute(
+          builder: (context) => const NotificationPage(),
+        ),
+      );
     }
   }
 }

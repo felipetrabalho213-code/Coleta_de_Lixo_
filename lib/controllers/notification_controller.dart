@@ -6,63 +6,87 @@ import 'package:shared_preferences/shared_preferences.dart';
 class NotificationController extends ChangeNotifier {
   static final NotificationController instance = NotificationController._internal();
   NotificationController._internal() {
-    _carregarNotificacoes();
+    _carregarEstado();
   }
 
-  static const String _storageKey = 'historico_notificacoes_coleta';
+  static const String _storageKeyNotificacoes = 'historico_notificacoes_coleta';
+  static const String _storageKeyAtivado = 'notificacoes_ativas_coleta';
+  static const String _topicoPadrao = 'garanhuns_coleta';
+
   final List<Map<String, String>> _notificacoes = [];
+  bool _notificacoesAtivas = true;
 
   List<Map<String, String>> get notificacoes => List.unmodifiable(_notificacoes);
+  bool get notificacoesAtivas => _notificacoesAtivas;
 
-  // 1. Adiciona e salva localmente
+  Future<void> alternarNotificacoes(bool ativar) async {
+    _notificacoesAtivas = ativar;
+    notifyListeners();
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_storageKeyAtivado, ativar);
+
+    if (ativar) {
+      await FirebaseMessaging.instance.subscribeToTopic(_topicoPadrao);
+    } else {
+      await FirebaseMessaging.instance.unsubscribeFromTopic(_topicoPadrao);
+    }
+  }
+
   Future<void> adicionarNotificacaoFirebase(RemoteMessage message) async {
+    if (!_notificacoesAtivas) return;
+
     final title = message.notification?.title ?? 'Aviso da Coleta';
     final body = message.notification?.body ?? 'Nova atualização sobre o serviço.';
-    final date = DateTime.now().toString().substring(0, 16);
+
+    // 📍 Força a conversão para o Fuso Horário do Brasil (GMT-3)
+    DateTime dataNotificacao = message.sentTime ?? DateTime.now();
+    DateTime dataBrasil = dataNotificacao.toUtc().subtract(const Duration(hours: 3));
+
+    // Formata no padrão ISO (Ano-Mês-Dia Hora:Minuto)
+    final String dateFormatted = dataBrasil.toString().substring(0, 16);
 
     _notificacoes.insert(0, {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'id': message.messageId ?? DateTime.now().millisecondsSinceEpoch.toString(),
       'title': title,
       'body': body,
-      'date': date,
+      'date': dateFormatted,
     });
 
     notifyListeners();
     await _salvarNotificacoes();
   }
 
-  // 2. Exclui uma notificação específica
   Future<void> removerNotificacao(String id) async {
     _notificacoes.removeWhere((item) => item['id'] == id);
     notifyListeners();
     await _salvarNotificacoes();
   }
 
-  // 3. Exclui todas as notificações
   Future<void> limparTodas() async {
     _notificacoes.clear();
     notifyListeners();
     await _salvarNotificacoes();
   }
 
-  // Persistência com SharedPreferences
   Future<void> _salvarNotificacoes() async {
     final prefs = await SharedPreferences.getInstance();
     final String dataJson = jsonEncode(_notificacoes);
-    await prefs.setString(_storageKey, dataJson);
+    await prefs.setString(_storageKeyNotificacoes, dataJson);
   }
 
-  Future<void> _carregarNotificacoes() async {
+  Future<void> _carregarEstado() async {
     final prefs = await SharedPreferences.getInstance();
-    final String? dataJson = prefs.getString(_storageKey);
+    _notificacoesAtivas = prefs.getBool(_storageKeyAtivado) ?? true;
 
+    final String? dataJson = prefs.getString(_storageKeyNotificacoes);
     if (dataJson != null && dataJson.isNotEmpty) {
       final List<dynamic> decodedList = jsonDecode(dataJson);
       _notificacoes.clear();
       for (var item in decodedList) {
         _notificacoes.add(Map<String, String>.from(item));
       }
-      notifyListeners();
     }
+    notifyListeners();
   }
 }

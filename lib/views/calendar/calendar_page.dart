@@ -10,161 +10,168 @@ class CalendarPage extends StatefulWidget {
 }
 
 class _CalendarPageState extends State<CalendarPage> {
-  // Instância do Controller
-  final CalendarController _controller = CalendarController();
-
-  CalendarFormat _formato = CalendarFormat.month;
-  
-  // ✅ FORÇA USAR A DATA LOCAL DO APARELHO (BRASIL)
-  DateTime _diaSelecionado = DateTime(
-      DateTime.now().year, DateTime.now().month, DateTime.now().day);
-  DateTime _mesAtual = DateTime(
-      DateTime.now().year, DateTime.now().month, DateTime.now().day);
-
-  String _ruaSelecionada = "Clique em uma data para ver a rota";
-  String _horarioPassagem = "--:--";
-
-  void _atualizarRota(DateTime data) {
-    final rotaInfo = _controller.obterRotaPorData(data);
-    setState(() {
-      _ruaSelecionada = rotaInfo["rua"]!;
-      _horarioPassagem = rotaInfo["horario"]!;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _atualizarRota(_diaSelecionado);
-  }
+  DateTime _focusedDay = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Calendário de Coleta"),
-        backgroundColor: const Color(0xFF006B4F),
-        foregroundColor: Colors.white,
+        title: const Text(
+          'Calendário de Coleta',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.green,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Column(
-        children: [
-          TableCalendar(
-            locale: 'pt_BR',
-            // ✅ Define o intervalo de datas sem usar UTC
-            firstDay: DateTime(2020, 1, 1),
-            lastDay: DateTime(2030, 12, 31),
-            focusedDay: _mesAtual,
-            calendarFormat: _formato,
-            selectedDayPredicate: (dia) => isSameDay(_diaSelecionado, dia),
-            onDaySelected: (dia, focado) {
-              setState(() {
-                _diaSelecionado = dia;
-                _mesAtual = focado;
-              });
-              _atualizarRota(dia);
+      body: AnimatedBuilder(
+        animation: CalendarController.instance,
+        builder: (context, _) {
+          final diaSelecionado = CalendarController.instance.diaSelecionado;
+          final rotasDoDia = CalendarController.instance.obterRotasDoDia(diaSelecionado);
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                      "Rota: $_ruaSelecionada • Horário: $_horarioPassagem"),
-                  backgroundColor: const Color(0xFF006B4F),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            onFormatChanged: (novoFormato) {
-              setState(() => _formato = novoFormato);
-            },
-            onPageChanged: (novoMes) {
-              setState(() => _mesAtual = novoMes);
-            },
-            calendarStyle: CalendarStyle(
-              selectedDecoration: const BoxDecoration(
-                color: Color(0xFF006B4F),
-                shape: BoxShape.circle,
-              ),
-              todayDecoration: BoxDecoration(
-                color: const Color(0xFF006B4F).withOpacity(0.35),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF006B4F), width: 2),
-              ),
-            ),
-            headerStyle: const HeaderStyle(
-              titleCentered: true,
-              titleTextStyle: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF004B36),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              children: [
-                Text(
-                  "Data: ${_diaSelecionado.day}/${_diaSelecionado.month}/${_diaSelecionado.year}",
-                  style: const TextStyle(
+          return Column(
+            children: [
+              // 1. Calendário em Português
+              TableCalendar(
+                locale: 'pt_BR', // 👈 Idioma em Português (Mês e Dias da Semana)
+                firstDay: DateTime.utc(2024, 1, 1),
+                lastDay: DateTime.utc(2030, 12, 31),
+                focusedDay: _focusedDay,
+                selectedDayPredicate: (day) => isSameDay(diaSelecionado, day),
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _focusedDay = focusedDay;
+                  });
+                  CalendarController.instance.selecionarDia(selectedDay);
+                },
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible: false,
+                  titleCentered: true,
+                  titleTextStyle: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
                     fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF004B36),
                   ),
                 ),
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF006B4F).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+                calendarStyle: CalendarStyle(
+                  selectedDecoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
                   ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        "Rota de Coleta",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF004B36),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _ruaSelecionada,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          color: Colors.black87,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        "Garanhuns - PE",
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Colors.grey,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        "⏰ Horário previsto: $_horarioPassagem",
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF006B4F),
-                        ),
-                      ),
-                    ],
+                  todayDecoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.4),
+                    shape: BoxShape.circle,
                   ),
                 ),
-              ],
-            ),
-          ),
-        ],
+              ),
+
+              const Divider(height: 1),
+
+              // 2. Título da Data Selecionada
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                child: Text(
+                  'Rota em: ${diaSelecionado.day.toString().padLeft(2, '0')}/${diaSelecionado.month.toString().padLeft(2, '0')}/${diaSelecionado.year}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+
+              // 3. Lista de 4 Ruas com Bairro e Horário
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  itemCount: rotasDoDia.length,
+                  itemBuilder: (context, index) {
+                    final item = rotasDoDia[index];
+                    return Card(
+                      elevation: 2,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.green.withOpacity(0.12),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.alt_route,
+                                color: Colors.green,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.rua,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Bairro: ${item.bairro} - Garanhuns/PE',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade50,
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: Colors.green.shade200),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.access_time,
+                                    size: 14,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    item.horario,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
