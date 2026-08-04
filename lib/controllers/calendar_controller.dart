@@ -35,7 +35,7 @@ class CalendarController extends ChangeNotifier {
         RotaItem(rua: 'Rua Siqueira Campos', bairro: 'Santo Antônio', horario: '08:00'),
         RotaItem(rua: 'Rua Dantas Barreto', bairro: 'Santo Antônio', horario: '09:30'),
         RotaItem(rua: 'Av. Rui Barbosa', bairro: 'Heliópolis', horario: '11:00'),
-        RotaItem(rua: 'Rua Santos Dumont', bairro: 'Heliópolis', horario: '14:00'),
+        RotaItem(rua: 'Rua Santos Dumont', bairro: 'Heliópolis', horario: '14:30'),
       ];
     } else {
       return [
