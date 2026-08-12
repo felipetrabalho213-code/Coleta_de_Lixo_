@@ -19,7 +19,7 @@ class SpecialCollectionSuccessPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
           Image.asset(
-              'assets/images/teste.png',
+              'assets/images/logo.png',
               height: 80,
             ),
           ],
