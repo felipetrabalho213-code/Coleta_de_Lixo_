@@ -1,7 +1,7 @@
-// PR 1 — CLEAN CODE
+// ==========================================
+// PR 2 — PRINCÍPIOS SOLID
+// ==========================================
 
-
-// Imports organizados: de fora para dentro
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -11,39 +11,80 @@ import 'firebase_options.dart';
 import 'services/firebase_notification_manager.dart';
 import 'views/home/home_page.dart';
 
-//Valores fixos em um lugar só
-class AppConfig {
-static const String appTitle = 'Segue Coleta';
-static const String locale = 'pt_BR';
+//Contrato — o que a configuração TEM que ter
+abstract class IAppConfig {
+String get appTitle;
+String get defaultLocale;
+String get languageCode;
+
+String get countryCode;
 }
 
-//Ponto de entrada
-void main() async {
-WidgetsFlutterBinding.ensureInitialized();
-
-//Cada coisa em sua função
-await _initializeDateFormatting();
-await _initializeFirebase();
-await _initializeNotificationManager();
-
-runApp(const SegueColetaApp());
+//Contrato pequeno — só o que precisa
+abstract class IInitializable {
+Future<void> initialize();
 }
 
-//Nome claro: formata datas
-Future<void> _initializeDateFormatting() async {
-await initializeDateFormatting(AppConfig.locale, null);
+// Implementação do contrato de configuração
+class AppConfig implements IAppConfig {
+@override
+final String appTitle = 'Segue Coleta';
+@override
+final String defaultLocale = 'pt_BR';
+@override
+final String languageCode = 'pt';
+@override
+final String countryCode = 'BR';
 }
 
-//Nome claro: inicia Firebase
-Future<void> _initializeFirebase() async {
+//Só cuida de datas
+class DateFormatService implements IInitializable {
+final IAppConfig config;
+DateFormatService(this.config);
+
+@override
+Future<void> initialize() async {
+await initializeDateFormatting(config.defaultLocale, null);
+
+}
+}
+
+//Só cuida do Firebase
+class FirebaseService implements IInitializable {
+@override
+Future<void> initialize() async {
 await Firebase.initializeApp(
 options: DefaultFirebaseOptions.currentPlatform,
 );
 }
+}
 
-//Nome claro: inicia notificações
-Future<void> _initializeNotificationManager() async {
+//Só cuida de notificações
+class NotificationService implements IInitializable {
+@override
+Future<void> initialize() async {
 await FirebaseNotificationManager.instance.inicializar();
+}
+}
+
+void main() async {
+WidgetsFlutterBinding.ensureInitialized();
+
+final IAppConfig config = AppConfig();
+
+//Adiciona serviço novo aqui, sem mudar o resto!
+final List<IInitializable> servicos = [
+
+DateFormatService(config),
+FirebaseService(),
+NotificationService(),
+];
+
+for (final servico in servicos) {
+await servico.initialize();
+}
+
+runApp(const SegueColetaApp());
 }
 
 class SegueColetaApp extends StatelessWidget {
@@ -51,19 +92,21 @@ const SegueColetaApp({super.key});
 
 @override
 Widget build(BuildContext context) {
+final IAppConfig config = AppConfig();
+
 return MaterialApp(
 debugShowCheckedModeBanner: false,
-title: AppConfig.appTitle,
+title: config.appTitle,
 navigatorKey: FirebaseNotificationManager.navigatorKey,
 home: const HomePage(),
-
 localizationsDelegates: const [
 GlobalMaterialLocalizations.delegate,
 GlobalWidgetsLocalizations.delegate,
 GlobalCupertinoLocalizations.delegate,
+
 ],
-supportedLocales: const [
-Locale('pt', 'BR'),
+supportedLocales: [
+Locale(config.languageCode, config.countryCode),
 ],
 );
 }
