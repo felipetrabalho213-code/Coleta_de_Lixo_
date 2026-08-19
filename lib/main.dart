@@ -1,3 +1,7 @@
+// PR 1 — CLEAN CODE
+
+
+// Imports organizados: de fora para dentro
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -7,48 +11,60 @@ import 'firebase_options.dart';
 import 'services/firebase_notification_manager.dart';
 import 'views/home/home_page.dart';
 
+//Valores fixos em um lugar só
+class AppConfig {
+static const String appTitle = 'Segue Coleta';
+static const String locale = 'pt_BR';
+}
+
+//Ponto de entrada
 void main() async {
-  // Garantir a inicialização dos bindings nativos do Flutter
-  WidgetsFlutterBinding.ensureInitialized();
+WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializa a formatação de datas do intl para Português (Brasil)
-  await initializeDateFormatting('pt_BR', null);
+//Cada coisa em sua função
+await _initializeDateFormatting();
+await _initializeFirebase();
+await _initializeNotificationManager();
 
-  // Inicializa o Firebase com as configurações da plataforma atual
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+runApp(const SegueColetaApp());
+}
 
-  // Inicializa o gerenciador de notificações do Firebase
-  await FirebaseNotificationManager.instance.inicializar();
+//Nome claro: formata datas
+Future<void> _initializeDateFormatting() async {
+await initializeDateFormatting(AppConfig.locale, null);
+}
 
-  runApp(const SegueColetaApp());
+//Nome claro: inicia Firebase
+Future<void> _initializeFirebase() async {
+await Firebase.initializeApp(
+options: DefaultFirebaseOptions.currentPlatform,
+);
+}
+
+//Nome claro: inicia notificações
+Future<void> _initializeNotificationManager() async {
+await FirebaseNotificationManager.instance.inicializar();
 }
 
 class SegueColetaApp extends StatelessWidget {
-  const SegueColetaApp({super.key});
+const SegueColetaApp({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Segue Coleta',
+@override
+Widget build(BuildContext context) {
+return MaterialApp(
+debugShowCheckedModeBanner: false,
+title: AppConfig.appTitle,
+navigatorKey: FirebaseNotificationManager.navigatorKey,
+home: const HomePage(),
 
-      // 📍 Chave global de navegação para abrir a tela de Notificações ao clicar nos avisos
-      navigatorKey: FirebaseNotificationManager.navigatorKey,
-
-      // Tela inicial do aplicativo
-      home: const HomePage(),
-
-      // Suporte ao calendário e componentes em Português (Brasil)
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [
-        Locale('pt', 'BR'),
-      ],
-    );
-  }
+localizationsDelegates: const [
+GlobalMaterialLocalizations.delegate,
+GlobalWidgetsLocalizations.delegate,
+GlobalCupertinoLocalizations.delegate,
+],
+supportedLocales: const [
+Locale('pt', 'BR'),
+],
+);
+}
 }
