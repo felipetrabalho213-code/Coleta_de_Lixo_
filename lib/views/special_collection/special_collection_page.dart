@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 import '../../services/storage_service.dart';
 import 'special_collection_success_page.dart';
 
@@ -26,9 +27,11 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
 
   Future<void> _atualizarHistorico() async {
     final dados = await StorageService.carregarHistorico();
-    setState(() {
-      _historico = dados;
-    });
+    if (mounted) {
+      setState(() {
+        _historico = dados;
+      });
+    }
   }
 
   // Exibe o Modal com Detalhes e Opção de Excluir
@@ -38,7 +41,7 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) {
+      builder: (modalContext) {
         return Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -56,15 +59,22 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red, size: 28),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.red,
+                      size: 28,
+                    ),
                     onPressed: () async {
+                      final messenger = ScaffoldMessenger.of(context);
+                      final navigator = Navigator.of(modalContext);
+
                       // Deleta o item
                       await StorageService.deletarSolicitacao(index);
                       await _atualizarHistorico();
-                      
-                      if (context.mounted) {
-                        Navigator.pop(context); // Fecha o modal
-                        ScaffoldMessenger.of(context).showSnackBar(
+
+                      if (mounted) {
+                        navigator.pop(); // Fecha o modal
+                        messenger.showSnackBar(
                           const SnackBar(
                             content: Text('Solicitação excluída com sucesso!'),
                             backgroundColor: Colors.red,
@@ -90,8 +100,11 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Fechar', style: TextStyle(color: Colors.white)),
+                  onPressed: () => Navigator.pop(modalContext),
+                  child: const Text(
+                    'Fechar',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ),
             ],
@@ -109,11 +122,14 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
         children: [
           Text(
             titulo,
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey),
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 2),
           Text(
-            (valor == null || valor.isEmpty) ? 'Não informado' : valor,
+            (valor == null || valor.trim().isEmpty) ? 'Não informado' : valor,
             style: const TextStyle(fontSize: 16, color: Colors.black87),
           ),
         ],
@@ -274,6 +290,15 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
                           return;
                         }
 
+                        // 🚀 ENVIO DO EVENTO PARA O GOOGLE ANALYTICS
+                        await FirebaseAnalytics.instance.logEvent(
+                          name: 'solicitacao_coleta_enviada',
+                          parameters: {
+                            'tipo': 'coleta_especial',
+                            'has_endereco': _enderecoController.text.isNotEmpty.toString(),
+                          },
+                        );
+
                         // 1. Salva no banco de dados local
                         await StorageService.salvarSolicitacao(
                           descricao: _descricaoController.text,
@@ -350,22 +375,27 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
                                 border: Border.all(color: Colors.grey.shade200),
                               ),
                               child: ListTile(
-                                onTap: () => _mostrarDetalhesESolucao(item, index),
+                                onTap: () =>
+                                    _mostrarDetalhesESolucao(item, index),
                                 leading: const CircleAvatar(
                                   backgroundColor: Color(0xFF1E9C4B),
-                                  child: Icon(Icons.assignment_turned_in,
-                                      color: Colors.white, size: 20),
+                                  child: Icon(
+                                    Icons.assignment_turned_in,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                                 title: Text(
-                                  item['descricao'] ?? 'Sem Título',
+                                  item['descricao']?.isNotEmpty == true
+                                      ? item['descricao']!
+                                      : 'Sem Título',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                   ),
                                 ),
                                 subtitle: Text(
-                                  item['endereco'] != null &&
-                                          item['endereco']!.isNotEmpty
+                                  item['endereco']?.isNotEmpty == true
                                       ? item['endereco']!
                                       : 'Sem endereço cadastrado',
                                   style: TextStyle(
@@ -374,15 +404,23 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
                                   ),
                                 ),
                                 trailing: IconButton(
-                                  icon: const Icon(Icons.delete_outline,
-                                      color: Colors.red),
+                                  icon: const Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.red,
+                                  ),
                                   onPressed: () async {
-                                    await StorageService.deletarSolicitacao(index);
+                                    final messenger =
+                                        ScaffoldMessenger.of(context);
+
+                                    await StorageService.deletarSolicitacao(
+                                        index);
                                     await _atualizarHistorico();
+
                                     if (context.mounted) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
+                                      messenger.showSnackBar(
                                         const SnackBar(
-                                          content: Text('Solicitação excluída!'),
+                                          content:
+                                              Text('Solicitação excluída!'),
                                           backgroundColor: Colors.red,
                                         ),
                                       );

@@ -1,4 +1,4 @@
-name: segue_coleta
+name: meu_abastecimento
 description: "Aplicativo Segue Coleta"
 publish_to: 'none'
 version: 1.0.0+1
@@ -17,6 +17,7 @@ dependencies:
     sdk: flutter
   firebase_core: ^4.12.1
   firebase_messaging: ^16.4.3
+  firebase_analytics: ^12.5.0
 
 dev_dependencies:
   flutter_test:
