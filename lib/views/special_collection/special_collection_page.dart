@@ -1,7 +1,8 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
-import '../../services/storage_service.dart';
-import 'special_collection_success_page.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../controllers/special_collection_controller.dart';
 
 class SpecialCollectionPage extends StatefulWidget {
   const SpecialCollectionPage({super.key});
@@ -11,428 +12,226 @@ class SpecialCollectionPage extends StatefulWidget {
 }
 
 class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
-  // Controllers dos campos
-  final TextEditingController _descricaoController = TextEditingController();
-  final TextEditingController _enderecoController = TextEditingController();
-  final TextEditingController _nomeController = TextEditingController();
-  final TextEditingController _telefoneController = TextEditingController();
-
-  List<Map<String, String>> _historico = [];
+  final SpecialCollectionController _controller = SpecialCollectionController();
+  final ImagePicker _picker = ImagePicker();
+  File? _selectedImage;
 
   @override
   void initState() {
     super.initState();
-    _atualizarHistorico();
-  }
-
-  Future<void> _atualizarHistorico() async {
-    final dados = await StorageService.carregarHistorico();
-    if (mounted) {
-      setState(() {
-        _historico = dados;
-      });
-    }
-  }
-
-  // Exibe o Modal com Detalhes e Opção de Excluir
-  void _mostrarDetalhesESolucao(Map<String, String> item, int index) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (modalContext) {
-        return Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Detalhes da Solicitação',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.red,
-                      size: 28,
-                    ),
-                    onPressed: () async {
-                      final messenger = ScaffoldMessenger.of(context);
-                      final navigator = Navigator.of(modalContext);
-
-                      // Deleta o item
-                      await StorageService.deletarSolicitacao(index);
-                      await _atualizarHistorico();
-
-                      if (mounted) {
-                        navigator.pop(); // Fecha o modal
-                        messenger.showSnackBar(
-                          const SnackBar(
-                            content: Text('Solicitação excluída com sucesso!'),
-                            backgroundColor: Colors.red,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                ],
-              ),
-              const Divider(height: 24),
-              _buildDetalheItem('Descrição:', item['descricao']),
-              _buildDetalheItem('Endereço:', item['endereco']),
-              _buildDetalheItem('Solicitante:', item['nome']),
-              _buildDetalheItem('Telefone:', item['telefone']),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E9C4B),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  onPressed: () => Navigator.pop(modalContext),
-                  child: const Text(
-                    'Fechar',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDetalheItem(String titulo, String? valor) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            titulo,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            (valor == null || valor.trim().isEmpty) ? 'Não informado' : valor,
-            style: const TextStyle(fontSize: 16, color: Colors.black87),
-          ),
-        ],
-      ),
-    );
+    _controller.carregarHistorico().then((_) {
+      setState(() {});
+    });
   }
 
   @override
   void dispose() {
-    _descricaoController.dispose();
-    _enderecoController.dispose();
-    _nomeController.dispose();
-    _telefoneController.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1E9C4B),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
+  Future<void> _pickImage(ImageSource source) async {
+    final XFile? pickedFile = await _picker.pickImage(
+      source: source,
+      imageQuality: 50,
+    );
+
+    if (pickedFile != null) {
+      final bytes = await pickedFile.readAsBytes();
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+        _controller.imagemBase64 = base64Encode(bytes);
+      });
+    }
+  }
+
+  void _showImagePickerModal() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt, color: Color(0xFF1E9C49)),
+              title: const Text('Tirar Foto'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
             ),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Cabeçalho
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      const Spacer(),
-                      Image.asset(
-                        'assets/images/teste.png',
-                        height: 40,
-                      ),
-                      const Spacer(),
-                      const SizedBox(width: 48),
-                    ],
-                  ),
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Color(0xFF1E9C49)),
+              title: const Text('Escolher da Galeria'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                  const SizedBox(height: 20),
+  Future<void> _enviarSolicitacao() async {
+    bool sucesso = await _controller.salvarSolicitacao();
 
-                  // Título da Tela
-                  const Center(
-                    child: Text(
-                      'Solicitar Coleta Especial',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+    if (sucesso && mounted) {
+      setState(() {
+        _selectedImage = null;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Solicitação registrada com sucesso!'),
+          backgroundColor: Color(0xFF1E9C49),
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Preencha pelo menos a descrição da solicitação.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Modal corrigido para visualização, edição e exclusão
+  void _exibirDetalhesSolicitacao(int index, Map<String, String> item) {
+    final descEditController = TextEditingController(text: item['descricao']);
+    final endEditController = TextEditingController(text: item['endereco']);
+    final nomeEditController = TextEditingController(text: item['nome']);
+    final telEditController = TextEditingController(text: item['telefone']);
+    String? imagemBase64Edit = item['imagem'];
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          width: MediaQuery.of(context).size.width * 0.85,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Detalhes da Solicitação',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                
+                if (imagemBase64Edit != null && imagemBase64Edit.isNotEmpty)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.memory(
+                      base64Decode(imagemBase64Edit),
+                      height: 140,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
                     ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Campos de Texto
+                  )
+                else
                   Container(
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Column(
-                      children: [
-                        _buildInputField(
-                          controller: _descricaoController,
-                          hint: 'Descreva o que precisa retirar',
-                          icon: Icons.keyboard_arrow_down,
-                        ),
-                        const Divider(height: 1),
-                        _buildInputField(
-                          controller: _enderecoController,
-                          hint: 'Endereço para coleta',
-                        ),
-                        const Divider(height: 1),
-                        _buildInputField(
-                          controller: _nomeController,
-                          hint: 'Nome do solicitante',
-                        ),
-                        const Divider(height: 1),
-                        _buildInputField(
-                          controller: _telefoneController,
-                          hint: 'Telefone para contato',
-                          icon: Icons.keyboard_arrow_down,
-                          keyboardType: TextInputType.phone,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Anexar Foto
-                  Container(
+                    height: 80,
                     width: double.infinity,
-                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.grey.shade200,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            color: Color(0xFF1E9C4B),
-                            size: 40,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'Anexar foto (opcional)',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 40),
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Botão Enviar Solicitação
-                  SizedBox(
-                    width: double.infinity,
-                    height: 52,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1E9C4B),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                      ),
+                  
+                const SizedBox(height: 16),
+                
+                TextField(
+                  controller: descEditController,
+                  decoration: const InputDecoration(
+                    labelText: 'Descrição',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                
+                TextField(
+                  controller: endEditController,
+                  decoration: const InputDecoration(
+                    labelText: 'Endereço',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                
+                TextField(
+                  controller: nomeEditController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nome',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                
+                TextField(
+                  controller: telEditController,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Telefone',
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
                       onPressed: () async {
-                        if (_descricaoController.text.trim().isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Preencha a descrição da coleta.'),
-                            ),
-                          );
-                          return;
-                        }
-
-                        // 🚀 ENVIO DO EVENTO PARA O GOOGLE ANALYTICS
-                        await FirebaseAnalytics.instance.logEvent(
-                          name: 'solicitacao_coleta_enviada',
-                          parameters: {
-                            'tipo': 'coleta_especial',
-                            'has_endereco': _enderecoController.text.isNotEmpty.toString(),
-                          },
-                        );
-
-                        // 1. Salva no banco de dados local
-                        await StorageService.salvarSolicitacao(
-                          descricao: _descricaoController.text,
-                          endereco: _enderecoController.text,
-                          nome: _nomeController.text,
-                          telefone: _telefoneController.text,
-                        );
-
-                        // 2. Atualiza a lista na tela
-                        await _atualizarHistorico();
-
-                        // Limpa os campos após salvar
-                        _descricaoController.clear();
-                        _enderecoController.clear();
-                        _nomeController.clear();
-                        _telefoneController.clear();
-
-                        // 3. Navega para a tela de sucesso
-                        if (context.mounted) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const SpecialCollectionSuccessPage(),
-                            ),
-                          );
-                        }
+                        Navigator.pop(context);
+                        await _controller.deletarSolicitacao(index);
+                        setState(() {});
                       },
-                      child: const Text(
-                        'ENVIAR SOLICITAÇÃO',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                    ),
+                    Row(
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
                         ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // --- HISTÓRICO COM INTERATIVIDADE ---
-                  const Text(
-                    'Histórico de Solicitações',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  _historico.isEmpty
-                      ? const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Center(
-                            child: Text(
-                              'Nenhuma solicitação enviada ainda.',
-                              style: TextStyle(color: Colors.grey),
-                            ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E9C49),
                           ),
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: _historico.length,
-                          itemBuilder: (context, index) {
-                            final item = _historico[index];
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade50,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade200),
-                              ),
-                              child: ListTile(
-                                onTap: () =>
-                                    _mostrarDetalhesESolucao(item, index),
-                                leading: const CircleAvatar(
-                                  backgroundColor: Color(0xFF1E9C4B),
-                                  child: Icon(
-                                    Icons.assignment_turned_in,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                                title: Text(
-                                  item['descricao']?.isNotEmpty == true
-                                      ? item['descricao']!
-                                      : 'Sem Título',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                subtitle: Text(
-                                  item['endereco']?.isNotEmpty == true
-                                      ? item['endereco']!
-                                      : 'Sem endereço cadastrado',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                trailing: IconButton(
-                                  icon: const Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.red,
-                                  ),
-                                  onPressed: () async {
-                                    final messenger =
-                                        ScaffoldMessenger.of(context);
+                          onPressed: () async {
+                            Map<String, String> dadosAtualizados = {
+                              'id': item['id'] ?? '',
+                              'descricao': descEditController.text,
+                              'endereco': endEditController.text,
+                              'nome': nomeEditController.text,
+                              'telefone': telEditController.text,
+                              'data': item['data'] ?? '',
+                              'imagem': imagemBase64Edit ?? '',
+                            };
 
-                                    await StorageService.deletarSolicitacao(
-                                        index);
-                                    await _atualizarHistorico();
-
-                                    if (context.mounted) {
-                                      messenger.showSnackBar(
-                                        const SnackBar(
-                                          content:
-                                              Text('Solicitação excluída!'),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  },
-                                ),
-                              ),
-                            );
+                            await _controller.atualizarSolicitacao(index, dadosAtualizados);
+                            if (context.mounted) Navigator.pop(context);
+                            setState(() {});
                           },
+                          child: const Text('Salvar', style: TextStyle(color: Colors.white)),
                         ),
-                ],
-              ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
         ),
@@ -440,22 +239,243 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
     );
   }
 
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String hint,
-    IconData? icon,
-    TextInputType keyboardType = TextInputType.text,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: TextField(
-        controller: controller,
-        keyboardType: keyboardType,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade600, fontSize: 14),
-          border: InputBorder.none,
-          suffixIcon: icon != null ? Icon(icon, color: Colors.grey) : null,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF1E9C49),
+      body: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(28),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back, color: Colors.black),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                    Expanded(
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/logo.png',
+                          height: 32,
+                          errorBuilder: (context, error, stackTrace) => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.recycling, color: Colors.green.shade600, size: 28),
+                              const SizedBox(width: 6),
+                              const Text('Segue Coleta', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 48),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Solicitar Coleta Especial',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Card agrupado com os inputs do formulário
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey.shade300),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _controller.descricaoController,
+                              decoration: const InputDecoration(
+                                hintText: 'Descreva o que precisa retirar',
+                                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                border: InputBorder.none,
+                                suffixIcon: Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                              ),
+                            ),
+                            Divider(height: 1, color: Colors.grey.shade300),
+                            TextField(
+                              controller: _controller.enderecoController,
+                              decoration: const InputDecoration(
+                                hintText: 'Endereço para coleta',
+                                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                            Divider(height: 1, color: Colors.grey.shade300),
+                            TextField(
+                              controller: _controller.nomeController,
+                              decoration: const InputDecoration(
+                                hintText: 'Nome do solicitante',
+                                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                            Divider(height: 1, color: Colors.grey.shade300),
+                            TextField(
+                              controller: _controller.telefoneController,
+                              keyboardType: TextInputType.phone,
+                              decoration: const InputDecoration(
+                                hintText: 'Telefone para contato',
+                                hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                                border: InputBorder.none,
+                                suffixIcon: Icon(Icons.keyboard_arrow_down, color: Colors.grey),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Botão de Câmera
+                      GestureDetector(
+                        onTap: _showImagePickerModal,
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _selectedImage != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.file(_selectedImage!, height: 80, width: 80, fit: BoxFit.cover),
+                                    )
+                                  : Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(Icons.camera_alt, color: Color(0xFF1E9C49), size: 28),
+                                    ),
+                              const SizedBox(height: 12),
+                              Text(
+                                _selectedImage != null ? 'Foto anexada (Toque para trocar)' : 'Anexar foto (opcional)',
+                                style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      // Botão Enviar
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _enviarSolicitacao,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1E9C49),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                            elevation: 0,
+                          ),
+                          child: const Text('ENVIAR SOLICITAÇÃO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+                        ),
+                      ),
+
+                      const SizedBox(height: 28),
+
+                      // Histórico Clicável
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Histórico de Solicitações', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
+                          const SizedBox(height: 16),
+
+                          _controller.historico.isEmpty
+                              ? const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(vertical: 12),
+                                    child: Text('Nenhuma solicitação enviada ainda.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                                  ),
+                                )
+                              : ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: _controller.historico.length,
+                                  itemBuilder: (context, index) {
+                                    final item = _controller.historico[index];
+                                    final String? imagemBase64 = item['imagem'];
+
+                                    return Container(
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: ListTile(
+                                        onTap: () => _exibirDetalhesSolicitacao(index, item),
+                                        leading: (imagemBase64 != null && imagemBase64.isNotEmpty)
+                                            ? ClipRRect(
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: Image.memory(base64Decode(imagemBase64), width: 44, height: 44, fit: BoxFit.cover),
+                                              )
+                                            : Container(
+                                                width: 44,
+                                                height: 44,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey.shade300,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 20),
+                                              ),
+                                        title: Text(item['descricao'] ?? '', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                        subtitle: Text(
+                                          '${item['endereco'] ?? ''}\n${item['nome'] ?? ''}',
+                                          style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                        ),
+                                        trailing: IconButton(
+                                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                                          onPressed: () async {
+                                            await _controller.deletarSolicitacao(index);
+                                            setState(() {});
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

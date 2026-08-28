@@ -4,31 +4,30 @@ import 'package:shared_preferences/shared_preferences.dart';
 class StorageService {
   static const String _key = 'historico_coletas';
 
-  // Salva uma nova solicitação adicionando à lista existente
+  // Salva uma nova solicitação
   static Future<void> salvarSolicitacao({
     required String descricao,
     required String endereco,
     required String nome,
     required String telefone,
+    String? imagemBase64,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       List<Map<String, String>> historico = await carregarHistorico();
 
-      // Cria a nova solicitação
       Map<String, String> novaSolicitacao = {
-        'id': DateTime.now().millisecondsSinceEpoch.toString(), // ID único para deletar
+        'id': DateTime.now().millisecondsSinceEpoch.toString(),
         'descricao': descricao.isEmpty ? 'Solicitação sem título' : descricao,
         'endereco': endereco,
         'nome': nome,
         'telefone': telefone,
         'data': DateTime.now().toString(),
+        'imagem': imagemBase64 ?? '',
       };
 
-      // Adiciona no topo da lista
       historico.insert(0, novaSolicitacao);
 
-      // Converte para JSON e salva no SharedPreferences
       String jsonString = jsonEncode(historico);
       await prefs.setString(_key, jsonString);
     } catch (e) {
@@ -36,7 +35,7 @@ class StorageService {
     }
   }
 
-  // Carrega a lista completa de solicitações
+  // Carrega a lista completa
   static Future<List<Map<String, String>>> carregarHistorico() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -52,7 +51,23 @@ class StorageService {
     return [];
   }
 
-  // Deleta uma solicitação pelo índice/ID
+  // Atualiza uma solicitação existente
+  static Future<void> atualizarSolicitacao(int index, Map<String, String> solicitacaoAtualizada) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      List<Map<String, String>> historico = await carregarHistorico();
+
+      if (index >= 0 && index < historico.length) {
+        historico[index] = solicitacaoAtualizada;
+        String jsonString = jsonEncode(historico);
+        await prefs.setString(_key, jsonString);
+      }
+    } catch (e) {
+      print('❌ Erro ao atualizar no SharedPreferences: $e');
+    }
+  }
+
+  // Deleta uma solicitação pelo índice
   static Future<void> deletarSolicitacao(int index) async {
     try {
       final prefs = await SharedPreferences.getInstance();

@@ -8,18 +8,21 @@ class SpecialCollectionController {
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController telefoneController = TextEditingController();
 
-  // Lista em memória com o histórico
+  // Armazena a imagem selecionada em formato Base64
+  String? imagemBase64;
+
+  // Lista do histórico na memória
   List<Map<String, String>> historico = [];
 
-  // Carrega o histórico salvo no SharedPreferences
+  // Carrega o histórico
   Future<void> carregarHistorico() async {
     historico = await StorageService.carregarHistorico();
   }
 
-  // Valida e salva uma nova solicitação
+  // Salva uma nova solicitação
   Future<bool> salvarSolicitacao() async {
     if (descricaoController.text.trim().isEmpty) {
-      return false; // Falha na validação
+      return false;
     }
 
     await StorageService.salvarSolicitacao(
@@ -27,11 +30,18 @@ class SpecialCollectionController {
       endereco: enderecoController.text,
       nome: nomeController.text,
       telefone: telefoneController.text,
+      imagemBase64: imagemBase64,
     );
 
     limparCampos();
     await carregarHistorico();
-    return true; // Sucesso
+    return true;
+  }
+
+  // Atualiza um registro do histórico
+  Future<void> atualizarSolicitacao(int index, Map<String, String> dadosAtualizados) async {
+    await StorageService.atualizarSolicitacao(index, dadosAtualizados);
+    await carregarHistorico();
   }
 
   // Apaga um item do histórico
@@ -40,15 +50,16 @@ class SpecialCollectionController {
     await carregarHistorico();
   }
 
-  // Limpa os formulários
+  // Limpa os campos
   void limparCampos() {
     descricaoController.clear();
     enderecoController.clear();
     nomeController.clear();
     telefoneController.clear();
+    imagemBase64 = null;
   }
 
-  // Libera a memória dos controllers ao fechar a tela
+  // Libera a memória
   void dispose() {
     descricaoController.dispose();
     enderecoController.dispose();
