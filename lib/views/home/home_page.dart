@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../controllers/home_controller.dart';
+import '../../models/app_state.dart';
 import '../admin/admin_page.dart';
 import '../calendar/calendar_page.dart';
 import '../driver/driver_page.dart';
@@ -8,14 +7,209 @@ import '../notification/notification_page.dart';
 import '../special_collection/special_collection_page.dart';
 import '../truck/truck_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
-  // Modal de Login para Motorista e ADM
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  // Modal de Cadastro e Login do Cidadão
+  void _exibirModalCidadao(BuildContext context) {
+    final nomeCtrl = TextEditingController();
+    final emailCtrl = TextEditingController();
+    final enderecoCtrl = TextEditingController();
+    final telefoneCtrl = TextEditingController();
+    final senhaCtrl = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => DefaultTabController(
+        length: 2,
+        child: Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            width: MediaQuery.of(context).size.width * 0.85,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Área do Cidadão',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const TabBar(
+                    labelColor: Color(0xFF006B4F),
+                    unselectedLabelColor: Colors.grey,
+                    indicatorColor: Color(0xFF006B4F),
+                    tabs: [
+                      Tab(text: 'Cadastrar'),
+                      Tab(text: 'Entrar'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 320,
+                    child: TabBarView(
+                      children: [
+                        // Aba Cadastrar
+                        SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: nomeCtrl,
+                                decoration: const InputDecoration(
+                                  labelText: 'Nome Completo',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: emailCtrl,
+                                decoration: const InputDecoration(
+                                  labelText: 'E-mail',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: enderecoCtrl,
+                                decoration: const InputDecoration(
+                                  labelText: 'Endereço (Ex: Rua São José, Centro)',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: telefoneCtrl,
+                                decoration: const InputDecoration(
+                                  labelText: 'Telefone',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF006B4F),
+                                  minimumSize: const Size.fromHeight(45),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if (nomeCtrl.text.isNotEmpty &&
+                                      emailCtrl.text.isNotEmpty &&
+                                      enderecoCtrl.text.isNotEmpty) {
+                                    setState(() {
+                                      usuarioLogadoGlobal = UsuarioCidadao(
+                                        nome: nomeCtrl.text.trim(),
+                                        email: emailCtrl.text.trim(),
+                                        endereco: enderecoCtrl.text.trim(),
+                                        telefone: telefoneCtrl.text.trim(),
+                                      );
+                                    });
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Cadastro realizado com sucesso!'),
+                                        backgroundColor: Color(0xFF006B4F),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'SALVAR CADASTRO',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Aba Entrar
+                        SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              TextField(
+                                controller: emailCtrl,
+                                decoration: const InputDecoration(
+                                  labelText: 'E-mail',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              TextField(
+                                controller: senhaCtrl,
+                                obscureText: true,
+                                decoration: const InputDecoration(
+                                  labelText: 'Senha',
+                                  border: OutlineInputBorder(),
+                                  isDense: true,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF006B4F),
+                                  minimumSize: const Size.fromHeight(45),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  if (emailCtrl.text.isNotEmpty) {
+                                    setState(() {
+                                      usuarioLogadoGlobal = UsuarioCidadao(
+                                        nome: 'Usuário',
+                                        email: emailCtrl.text.trim(),
+                                        endereco: 'Rua São José',
+                                        telefone: '(00) 00000-0000',
+                                      );
+                                    });
+                                    Navigator.pop(context);
+                                  }
+                                },
+                                child: const Text(
+                                  'ENTRAR',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Modal de Acesso Restrito (ADM / Motorista)
   void _exibirModalLogin(BuildContext context) {
     final cpfController = TextEditingController();
     final senhaController = TextEditingController();
-    int perfilSelecionado = 0; // 0 = Motorista, 1 = ADM
+    int perfilSelecionado = 0;
 
     showDialog(
       context: context,
@@ -45,8 +239,6 @@ class HomePage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 10),
-
-                    // Seleção do Perfil (Motorista ou ADM)
                     Row(
                       children: [
                         Expanded(
@@ -80,10 +272,7 @@ class HomePage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 20),
-
-                    // Campos do Formulário
                     TextField(
                       controller: cpfController,
                       decoration: InputDecoration(
@@ -104,10 +293,7 @@ class HomePage extends StatelessWidget {
                         prefixIcon: Icon(Icons.lock_outline),
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
-                    // Botão Entrar com Validação
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF006B4F),
@@ -119,31 +305,33 @@ class HomePage extends StatelessWidget {
                           final cpfDigitado = cpfController.text.trim();
                           final senhaDigitada = senhaController.text.trim();
 
-                          // Procura o motorista específico na lista cadastrada
                           final motoristaLogado = listaMotoristasGlobais.firstWhere(
                             (m) => m.cpf == cpfDigitado && m.senha == senhaDigitada,
-                            orElse: () => Motorista(nome: '', cpf: '', caminhao: ''),
+                            orElse: () => Motorista(
+                              nome: '',
+                              cpf: '',
+                              caminhao: '',
+                              senha: '',
+                            
+                            ),
                           );
 
                           if (motoristaLogado.cpf.isNotEmpty) {
-                            Navigator.pop(context); // Fecha o modal
+                            motoristaLogadoGlobal = motoristaLogado;
+                            Navigator.pop(context);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => DriverPage(motorista: motoristaLogado),
+                                builder: (_) => const DriverPage(),
                               ),
                             );
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('CPF não cadastrado ou senha incorreta!'),
-                                backgroundColor: Colors.red,
-                              ),
+                              const SnackBar(content: Text('CPF ou Senha incorretos!')),
                             );
                           }
                         } else {
-                          // Acesso Painel ADM
-                          Navigator.pop(context); // Fecha o modal
+                          Navigator.pop(context);
                           Navigator.push(
                             context,
                             MaterialPageRoute(builder: (_) => const AdminPage()),
@@ -167,8 +355,6 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final HomeController controller = HomeController();
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -176,7 +362,7 @@ class HomePage extends StatelessWidget {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // Cabeçalho com ícone de login
+              // Topo com Logo e Ícone de Login Restrito
               Row(
                 children: [
                   const SizedBox(width: 48),
@@ -184,21 +370,40 @@ class HomePage extends StatelessWidget {
                     child: Center(
                       child: Image.asset(
                         'assets/images/teste.png',
-                        height: 90,
+                        height: 80,
                         fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => const Icon(
+                          Icons.eco,
+                          size: 60,
+                          color: Color(0xFF006B4F),
+                        ),
                       ),
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.account_circle_outlined, color: Color(0xFF006B4F), size: 32),
-                    tooltip: 'Login Motorista / ADM',
+                    tooltip: 'Acesso Restrito',
                     onPressed: () => _exibirModalLogin(context),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 40),
+              // SAUDAÇÃO LOGO ABAIXO DA LOGO
+              if (usuarioLogadoGlobal != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Olá, ${usuarioLogadoGlobal!.nome}!',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF006B4F),
+                  ),
+                ),
+              ],
 
+              const SizedBox(height: 20),
+
+              // Grade de Botões de Recursos
               Expanded(
                 child: Column(
                   children: [
@@ -220,9 +425,7 @@ class HomePage extends StatelessWidget {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 16),
-
                     Row(
                       children: [
                         buildCard(
@@ -241,6 +444,33 @@ class HomePage extends StatelessWidget {
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 24),
+
+                    // BOTÃO SUMIRÁ QUANDO O USUÁRIO LOGAR
+                    if (usuarioLogadoGlobal == null)
+                      Center(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF006B4F),
+                            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(25),
+                            ),
+                            elevation: 4,
+                          ),
+                          onPressed: () => _exibirModalCidadao(context),
+                          icon: const Icon(Icons.login, color: Colors.white),
+                          label: const Text(
+                            'ENTRAR / CADASTRAR',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
@@ -267,7 +497,7 @@ class HomePage extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => page),
-            );
+            ).then((_) => setState(() {}));
           },
           child: Container(
             margin: const EdgeInsets.all(8),
