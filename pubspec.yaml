@@ -19,6 +19,7 @@ dependencies:
   firebase_messaging: ^16.4.3
   firebase_analytics: ^12.5.0
   image_picker: ^1.2.3
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -28,12 +29,11 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  # ✅ Caminho das imagens (logo etc)
   assets:
     - assets/images/
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/icone.png" # Caminho para a sua logo
-  min_sdk_android: 21    
+  image_path: "assets/images/icone.png"
+  min_sdk_android: 21
