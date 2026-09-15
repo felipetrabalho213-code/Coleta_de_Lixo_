@@ -53,14 +53,14 @@ class _LoginMotoristaPageState extends State<LoginMotoristaPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login Motorista'),
-        backgroundColor: const Color(0xFF1E9C49),
+        backgroundColor: const Color(0xFF006B4F),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.local_shipping, size: 80, color: Color(0xFF1E9C49)),
+            const Icon(Icons.local_shipping, size: 80, color: Color(0xFF006B4F)),
             const SizedBox(height: 20),
             TextField(
               controller: _cpfController,
@@ -85,7 +85,7 @@ class _LoginMotoristaPageState extends State<LoginMotoristaPage> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF1E9C49),
+                  backgroundColor: const Color(0xFF006B4F),
                 ),
                 onPressed: _autenticarMotorista,
                 child: const Text('ENTRAR', style: TextStyle(color: Colors.white, fontSize: 16)),

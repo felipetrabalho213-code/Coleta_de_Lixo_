@@ -27,8 +27,11 @@ class _DriverPageState extends State<DriverPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(motorista != null ? 'Painel: ${motorista.nome}' : 'Painel do Motorista'),
-        backgroundColor: const Color(0xFF1E9C49),
+        iconTheme: const IconThemeData( color: Colors.white),
+       title: const Text('Painel do Motorista',
+        style: TextStyle(color:Colors.white)
+      ),
+        backgroundColor: const Color(0xFF006B4F),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -48,7 +51,7 @@ class _DriverPageState extends State<DriverPage> {
             Card(
               color: Colors.green.shade50,
               child: ListTile(
-                leading: const Icon(Icons.local_shipping, size: 40, color: Color(0xFF1E9C49)),
+                leading: const Icon(Icons.local_shipping, size: 40, color: Color(0xFF006B4F)),
                 title: Text(
                   motorista?.nome ?? 'Motorista Desconhecido',
                   style: const TextStyle(fontWeight: FontWeight.bold),
@@ -64,7 +67,7 @@ class _DriverPageState extends State<DriverPage> {
               height: 48,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: _emAndamento ? Colors.orange : const Color(0xFF1E9C49),
+                  backgroundColor: _emAndamento ? Colors.orange : const Color(0xFF006B4F),
                 ),
                 icon: Icon(_emAndamento ? Icons.pause : Icons.play_arrow, color: Colors.white),
                 label: Text(
@@ -82,7 +85,7 @@ class _DriverPageState extends State<DriverPage> {
 
             const Text(
               'Suas Rotas Atribuídas',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E9C49)),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF006B4F)),
             ),
             const SizedBox(height: 10),
 

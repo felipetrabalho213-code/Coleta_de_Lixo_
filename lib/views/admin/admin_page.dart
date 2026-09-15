@@ -210,7 +210,7 @@ class _AdminPageState extends State<AdminPage> {
                   child: const Text('CANCELAR', style: TextStyle(color: Colors.grey)),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E9C49)),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006B4F)),
                   onPressed: () {
                     if (editNomeCtrl.text.isEmpty || editRuasCtrl.text.isEmpty) return;
 
@@ -291,7 +291,7 @@ class _AdminPageState extends State<AdminPage> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Editar Motorista', style: TextStyle(color: Color(0xFF1E9C49), fontWeight: FontWeight.bold)),
+        title: const Text('Editar Motorista', style: TextStyle(color: Color(0xFF006B4F), fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -309,7 +309,7 @@ class _AdminPageState extends State<AdminPage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('CANCELAR', style: TextStyle(color: Colors.grey))),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E9C49)),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF006B4F)),
             onPressed: () {
               setState(() {
                 listaMotoristasGlobais[index] = Motorista(
@@ -336,14 +336,19 @@ class _AdminPageState extends State<AdminPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAF8FB),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E9C49),
-        title: const Text('Painel Administrativo'),
+        iconTheme: const IconThemeData( color: Colors.white),
+        backgroundColor: const Color(0xFF006B4F),
+
+
+        title: const Text('Painel Administrativo',
+        style: TextStyle(color:Colors.white)
+      ),
         elevation: 0,
       ),
       body: Column(
         children: [
           Container(
-            color: const Color(0xFF1E9C49),
+            color: const Color(0xFF006B4F),
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -378,12 +383,12 @@ class _AdminPageState extends State<AdminPage> {
         ),
         child: Row(
           children: [
-            Icon(icone, color: selecionado ? const Color(0xFF1E9C49) : Colors.white, size: 18),
+            Icon(icone, color: selecionado ? const Color(0xFF006B4F) : Colors.white, size: 18),
             const SizedBox(width: 6),
             Text(
               titulo,
               style: TextStyle(
-                color: selecionado ? const Color(0xFF1E9C49) : Colors.white,
+                color: selecionado ? const Color(0xFF006B4F) : Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
@@ -403,7 +408,7 @@ class _AdminPageState extends State<AdminPage> {
         children: [
           const Text(
             'Cadastrar Nova Rota',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E9C49)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF006B4F)),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -432,7 +437,7 @@ class _AdminPageState extends State<AdminPage> {
               hintText: 'Selecione o Motorista Responsável',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(6)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              prefixIcon: const Icon(Icons.person, color: Color(0xFF1E9C49)),
+              prefixIcon: const Icon(Icons.person, color: Color(0xFF006B4F)),
             ),
             items: listaMotoristasGlobais.map((motorista) {
               return DropdownMenuItem<Motorista>(
@@ -464,7 +469,7 @@ class _AdminPageState extends State<AdminPage> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.calendar_month, color: Color(0xFF1E9C49)),
+                  const Icon(Icons.calendar_month, color: Color(0xFF006B4F)),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
@@ -487,7 +492,7 @@ class _AdminPageState extends State<AdminPage> {
             height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E9C49),
+                backgroundColor: const Color(0xFF006B4F),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
               ),
               onPressed: _cadastrarRota,
@@ -510,7 +515,7 @@ class _AdminPageState extends State<AdminPage> {
                       elevation: 2,
                       margin: const EdgeInsets.symmetric(vertical: 6),
                       child: ListTile(
-                        leading: const Icon(Icons.alt_route, color: Color(0xFF1E9C49), size: 30),
+                        leading: const Icon(Icons.alt_route, color: Color(0xFF006B4F), size: 30),
                         title: Text(rota.nome, style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Text(
                           '${rota.ruas}\n'
@@ -553,7 +558,7 @@ class _AdminPageState extends State<AdminPage> {
         children: [
           const Text(
             'Cadastrar Motorista',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E9C49)),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF006B4F)),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -595,7 +600,7 @@ class _AdminPageState extends State<AdminPage> {
             height: 48,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E9C49),
+                backgroundColor: const Color(0xFF006B4F),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
               ),
               onPressed: _cadastrarMotorista,

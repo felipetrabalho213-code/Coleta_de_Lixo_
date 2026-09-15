@@ -84,7 +84,7 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Solicitação registrada com sucesso!'),
-          backgroundColor: Color(0xFF1E9C49),
+          backgroundColor: Color(0xFF006B4F),
         ),
       );
     } else if (mounted) {
@@ -208,7 +208,7 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
                         const SizedBox(width: 8),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E9C49),
+                            backgroundColor: const Color(0xFF006B4F),
                           ),
                           onPressed: () async {
                             Map<String, String> dadosAtualizados = {
@@ -242,7 +242,7 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E9C49),
+      backgroundColor: const Color(0xFF006B4F),
       body: SafeArea(
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -398,7 +398,7 @@ class _SpecialCollectionPageState extends State<SpecialCollectionPage> {
                         child: ElevatedButton(
                           onPressed: _enviarSolicitacao,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF1E9C49),
+                            backgroundColor: const Color(0xFF006B4F),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
                             elevation: 0,
                           ),

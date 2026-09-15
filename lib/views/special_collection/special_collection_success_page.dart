@@ -59,7 +59,7 @@ class SpecialCollectionSuccessPage extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: const BoxDecoration(
-                          color: Color(0xFF1E9C4B),
+                          color: Color(0xFF006B4F),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(

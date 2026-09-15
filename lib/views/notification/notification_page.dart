@@ -30,7 +30,7 @@ class NotificationPage extends StatelessWidget {
           'Histórico de Avisos',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color(0xFF006B4F),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
           // Ícone para ativar/desativar notificações

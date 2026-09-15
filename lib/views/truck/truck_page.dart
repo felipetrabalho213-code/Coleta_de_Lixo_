@@ -137,7 +137,11 @@ class _TruckPageState extends State<TruckPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Acompanhar Caminhão'),
+        iconTheme: const IconThemeData( color: Colors.white),
+        title: const Text('Acompanhar Caminhão',
+        style: TextStyle(color:Colors.white)
+      ),
+       
         backgroundColor: const Color(0xFF006B4F),
         elevation: 0,
       ),
@@ -216,7 +220,7 @@ class _TruckPageState extends State<TruckPage> {
                                 const SizedBox(height: 12),
                                 Text(
                                   'Status: Em atendimento na sua região',
-                                  style: TextStyle(color: Colors.green.shade700, fontWeight: FontWeight.bold),
+                                  style: TextStyle(color: const Color(0xFF006B4F), fontWeight: FontWeight.bold),
                                 ),
                                 const SizedBox(height: 6),
                                 const Text('Previsão de Passagem: ~15 a 20 minutos'),
